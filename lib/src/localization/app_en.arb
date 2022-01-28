@@ -1,0 +1,6 @@
+{
+  "appTitle": "u_taxi",
+  "@appTitle": {
+    "description": "The title of the application"
+  }
+}
