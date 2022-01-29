@@ -1,6 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:u_taxi/authentication/car_info_screen.dart';
 import 'package:u_taxi/authentication/login_screen.dart';
+import 'package:u_taxi/global/global.dart';
 import 'package:u_taxi/widgets/dialog_widgets.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -32,12 +36,42 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
   }
 
-  void saveDriverData() {
+  Future<void> saveDriverData() async {
     showDialog(
         context: context,
         builder: (context) => const ProgressDialog(
               msg: 'Processing Please wait... ',
             ));
+
+    final User? firebaseUser = (await fAuth
+            .createUserWithEmailAndPassword(
+                email: emailController.text.trim(),
+                password: passwordController.text.trim())
+            .catchError((msg) {
+      Navigator.pop(context);
+      Fluttertoast.showToast(msg: 'Error' + msg.toString());
+      return msg;
+    }))
+        .user;
+
+    if (firebaseUser != null) {
+      Map driverMap = {
+        'id': firebaseUser.uid,
+        'name': nameController.text.trim(),
+        'phone': phoneController.text.trim(),
+        'email': emailController.text.trim(),
+      };
+
+      final driverRef = FirebaseDatabase.instance.ref().child('drivers');
+
+      driverRef.child(firebaseUser.uid).set(driverMap);
+      currentFirebaseUser = firebaseUser;
+      Fluttertoast.showToast(msg: 'Account has been created successfully!');
+      Navigator.restorablePushNamed(context, CarInfoScreen.routeName);
+    } else {
+      Navigator.pop(context);
+      Fluttertoast.showToast(msg: 'Account has not been ceated');
+    }
   }
 
   @override

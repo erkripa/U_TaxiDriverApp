@@ -1,4 +1,8 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:u_taxi/global/global.dart';
+import 'package:u_taxi/splashScreen/splash_screen.dart';
 
 class CarInfoScreen extends StatefulWidget {
   const CarInfoScreen({Key? key}) : super(key: key);
@@ -12,6 +16,24 @@ class _CarInfoScreenState extends State<CarInfoScreen> {
   final carModelController = TextEditingController();
   final carColorController = TextEditingController();
   final carNumberController = TextEditingController();
+
+  saveCarInfo() {
+    Map driverCarInfoMap = {
+      'car_model': carModelController.text.trim(),
+      'car_color': carColorController.text.trim(),
+      'car_number': carNumberController.text.trim(),
+      'car_type': _selectedCar,
+    };
+    final driverRef = FirebaseDatabase.instance.ref().child('drivers');
+    driverRef
+        .child(currentFirebaseUser!.uid)
+        .child('car_details')
+        .set(driverCarInfoMap);
+
+    Fluttertoast.showToast(msg: 'Your car details has been saved succesfully!');
+
+    Navigator.restorablePushNamed(context, MySplashScreen.routeName);
+  }
 
   List<String> carTypeList = ['uber-go', 'uber-x', 'bike'];
   String? _selectedCar;
@@ -125,7 +147,14 @@ class _CarInfoScreenState extends State<CarInfoScreen> {
               ),
               ElevatedButton(
                   onPressed: () {
-                    print(_selectedCar);
+                    if (carModelController.text.isNotEmpty &&
+                        carNumberController.text.isNotEmpty &&
+                        carColorController.text.isNotEmpty &&
+                        _selectedCar != null) {
+                      saveCarInfo();
+                    } else {
+                      Fluttertoast.showToast(msg: 'Please fill the details');
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 12),

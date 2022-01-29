@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:u_taxi/authentication/login_screen.dart';
+import 'package:u_taxi/global/global.dart';
+import 'package:u_taxi/mainScreen/main_screen.dart';
 
 class MySplashScreen extends StatefulWidget {
   const MySplashScreen({Key? key}) : super(key: key);
@@ -14,9 +16,13 @@ class MySplashScreen extends StatefulWidget {
 
 class _MySplashScreenState extends State<MySplashScreen> {
   startTimer() {
-    Timer(const Duration(seconds: 3), () {
-      Navigator.push(context,
-          MaterialPageRoute(builder: (context) => const LoginScreen()));
+    Timer(const Duration(seconds: 3), () async {
+      if (await fAuth.currentUser != null) {
+        Navigator.restorablePushNamed(context, MainScreen.routName);
+      } else {
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const LoginScreen()));
+      }
     });
   }
 
